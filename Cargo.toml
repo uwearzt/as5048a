@@ -1,0 +1,23 @@
+# ------------------------------------------------------------------------------
+# Copyright 2018 Uwe Arzt, mail@uwe-arzt.de
+# SPDX-License-Identifier: Apache-2.0
+# ------------------------------------------------------------------------------
+
+[package]
+name = "as5048a"
+version = "0.1.0"
+edition = "2018"
+authors = ["Uwe Arzt <mail@uwe-arzt.de>"]
+categories = ["embedded", "hardware-support", "no-std"]
+description = "Rust driver for AMS AS5048A Magnetic Rotary Encoder"
+documentation = "https://docs.rs/as5048a"
+keywords = ["embedded-hal-driver", "AMS", "AS5048A"]
+license = "Apache-2.0"
+repository = "https://github.com/uwearzt/as5048a"
+
+[dependencies]
+embedded-hal = "0.2.2"
+
+# ------------------------------------------------------------------------------
+# build example raspberrypi.rs
+linux-embedded-hal = "0.2.2"
