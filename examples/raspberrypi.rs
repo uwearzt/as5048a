@@ -18,7 +18,7 @@ fn main() -> Result<(), std::io::Error> {
     let mut spi = Spidev::open("/dev/spidev0.0").unwrap();
     let options = SpidevOptions::new()
         .max_speed_hz(1_000_000)
-        .mode(spidev::SPI_MODE_1)
+        .mode(spidev::SpiModeFlags::SPI_MODE_1)
         .build();
     spi.configure(&options).unwrap();
 

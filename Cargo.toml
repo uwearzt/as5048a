@@ -16,8 +16,8 @@ license = "Apache-2.0"
 repository = "https://github.com/uwearzt/as5048a"
 
 [dependencies]
-embedded-hal = "0.2.2"
+embedded-hal = "0.2.6"
 
 # ------------------------------------------------------------------------------
 # build example raspberrypi.rs
-linux-embedded-hal = "0.2.2"
+linux-embedded-hal = "0.3.2"
