@@ -18,7 +18,7 @@ fn main() -> Result<(), std::io::Error> {
     let mut spi = Spidev::open("/dev/spidev0.0").unwrap();
     let options = SpidevOptions::new()
         .max_speed_hz(1_000_000)
-        .mode(spidev::SPI_MODE_1)
+        .mode(spidev::SpiModeFlags::SPI_MODE_1)
         .build();
     spi.configure(&options).unwrap();
 
@@ -29,7 +29,7 @@ fn main() -> Result<(), std::io::Error> {
     ncs.set_direction(Direction::Out).unwrap();
     ncs.set_value(1).unwrap();
 
-    let mut as5048 = AS5048A::new(spi, ncs).unwrap();
+    let mut as5048 = AS5048A::new(spi, ncs);
 
     println!("AS5048A Example");
     loop {
