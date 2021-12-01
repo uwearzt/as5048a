@@ -1,12 +1,12 @@
 # ------------------------------------------------------------------------------
-# Copyright 2018 Uwe Arzt, mail@uwe-arzt.de
+# Copyright 2018-2021 Uwe Arzt, mail@uwe-arzt.de
 # SPDX-License-Identifier: Apache-2.0
 # ------------------------------------------------------------------------------
 
 [package]
 name = "as5048a"
-version = "0.1.0"
-edition = "2018"
+version = "0.2.0"
+edition = "2021"
 authors = ["Uwe Arzt <mail@uwe-arzt.de>"]
 categories = ["embedded", "hardware-support", "no-std"]
 description = "Rust driver for AMS AS5048A Magnetic Rotary Encoder"

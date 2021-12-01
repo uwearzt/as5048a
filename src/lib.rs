@@ -13,6 +13,7 @@ use embedded_hal as hal;
 use hal::blocking::spi::Transfer;
 use hal::digital::v2::OutputPin;
 
+/// Error
 pub enum Error<SPI, CS>
 where
     SPI: Transfer<u8>,
@@ -49,6 +50,7 @@ enum Register {
     Angle = 0x3FFF,
 }
 
+/// AS5048A driver
 pub struct AS5048A<SPI, CS> {
     spi: SPI,
     cs: CS,
@@ -72,6 +74,7 @@ where
         self.read_u16(Register::Magnitude)
     }
 
+    /// Read the rotation angle as u16 (only 14 bits are significant)
     pub fn angle(&mut self) -> Result<u16, Error<SPI, CS>> {
         self.read_u16(Register::Angle)
     }
