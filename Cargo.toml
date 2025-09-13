@@ -16,9 +16,9 @@ license = "Apache-2.0"
 repository = "https://github.com/uwearzt/as5048a"
 
 [dependencies]
-embedded-hal = "0.2.6"
+embedded-hal = "1.0.0"
 
 [dev-dependencies]
 # ------------------------------------------------------------------------------
 # build example raspberrypi.rs
-linux-embedded-hal = "0.3.2"
+linux-embedded-hal = {version="0.4.0", features = ["spi","gpio_sysfs"], default-features = false}

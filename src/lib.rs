@@ -9,31 +9,23 @@
 
 use core::fmt;
 
-use embedded_hal as hal;
-use hal::blocking::spi::Transfer;
-use hal::digital::v2::OutputPin;
+use embedded_hal::spi::SpiDevice;
 
 /// Error
-pub enum Error<SPI, CS>
+pub enum Error<SPI>
 where
-    SPI: Transfer<u8>,
-    CS: OutputPin,
+    SPI: SpiDevice<u8>,
 {
     Spi(SPI::Error),
-    ChipSelect(CS::Error),
 }
 
-impl<SPI, CS> fmt::Debug for Error<SPI, CS>
+impl<SPI> fmt::Debug for Error<SPI>
 where
-    SPI: Transfer<u8>,
-    <SPI as Transfer<u8>>::Error: fmt::Debug,
-    CS: OutputPin,
-    <CS as OutputPin>::Error: fmt::Debug,
+    SPI: SpiDevice<u8>,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Error::Spi(error) => write!(f, "Spi({:?})", error),
-            Error::ChipSelect(error) => write!(f, "ChipSelect({:?})", error),
         }
     }
 }
@@ -51,35 +43,33 @@ enum Register {
 }
 
 /// AS5048A driver
-pub struct AS5048A<SPI, CS> {
+pub struct AS5048A<SPI: SpiDevice<u8>> {
     spi: SPI,
-    cs: CS,
 }
 
-impl<SPI, CS, E> AS5048A<SPI, CS>
+impl<SPI, E> AS5048A<SPI>
 where
-    SPI: Transfer<u8, Error = E>,
-    CS: OutputPin,
+    SPI: SpiDevice<u8, Error = E>,
 {
-    pub fn new(spi: SPI, cs: CS) -> Self {
-        Self { spi, cs }
+    pub fn new(spi: SPI) -> Self {
+        Self { spi }
     }
 
-    pub fn diag_gain(&mut self) -> Result<(u8, u8), Error<SPI, CS>> {
+    pub fn diag_gain(&mut self) -> Result<(u8, u8), Error<SPI>> {
         self.read(Register::DiagAgc)
             .map(|arr| (arr[0] & 0x0f, arr[1]))
     }
 
-    pub fn magnitude(&mut self) -> Result<u16, Error<SPI, CS>> {
+    pub fn magnitude(&mut self) -> Result<u16, Error<SPI>> {
         self.read_u16(Register::Magnitude)
     }
 
     /// Read the rotation angle as u16 (only 14 bits are significant)
-    pub fn angle(&mut self) -> Result<u16, Error<SPI, CS>> {
+    pub fn angle(&mut self) -> Result<u16, Error<SPI>> {
         self.read_u16(Register::Angle)
     }
 
-    fn read_u16(&mut self, reg: Register) -> Result<u16, Error<SPI, CS>> {
+    fn read_u16(&mut self, reg: Register) -> Result<u16, Error<SPI>> {
         match self.read(reg) {
             Ok(arr) => {
                 let y = u16::from_be_bytes(arr);
@@ -89,25 +79,21 @@ where
         }
     }
 
-    fn read(&mut self, reg: Register) -> Result<[u8; 2], Error<SPI, CS>> {
+    fn read(&mut self, reg: Register) -> Result<[u8; 2], Error<SPI>> {
         // send cmd
         let mut cmd: u16 = 0b_0100_0000_0000_0000;
         cmd |= reg as u16;
         cmd = set_parity(cmd);
 
-        let mut bytes = cmd.to_be_bytes();
-
-        self.cs.set_low().map_err(Error::ChipSelect)?;
-        self.spi.transfer(&mut bytes).map_err(Error::Spi)?;
-        self.cs.set_high().map_err(Error::ChipSelect)?;
+        let bytes = cmd.to_be_bytes();
+        let mut result = [0u8; 2];
+        self.spi.transfer(&mut result, &bytes).map_err(Error::Spi)?;
 
         // send nop to get result back
-        let mut nop = [0x00, 0x00];
-        self.cs.set_low().map_err(Error::ChipSelect)?;
-        self.spi.transfer(&mut nop).map_err(Error::Spi)?;
-        self.cs.set_high().map_err(Error::ChipSelect)?;
+        let nop = [0x00, 0x00];
+        self.spi.transfer(&mut result,&nop).map_err(Error::Spi)?;
 
-        Ok(nop)
+        Ok(result)
     }
 }
 
