@@ -9,7 +9,7 @@
 
 use core::fmt;
 
-use embedded_hal::spi::SpiDevice;
+use embedded_hal::{delay::DelayNs, spi::SpiDevice};
 
 /// Error
 pub enum Error<SPI>
@@ -43,16 +43,18 @@ enum Register {
 }
 
 /// AS5048A driver
-pub struct AS5048A<SPI: SpiDevice<u8>> {
+pub struct AS5048A<SPI: SpiDevice<u8>, DELAY: DelayNs, const READ_DELAY_NS: u32> {
     spi: SPI,
+    delay:Option<DELAY>,
 }
 
-impl<SPI, E> AS5048A<SPI>
+impl<SPI, DELAY, E, const READ_DELAY_NS: u32> AS5048A<SPI, DELAY, READ_DELAY_NS>
 where
     SPI: SpiDevice<u8, Error = E>,
+    DELAY: DelayNs,
 {
-    pub fn new(spi: SPI) -> Self {
-        Self { spi }
+    pub fn new(spi: SPI, delay: Option<DELAY>) -> Self {
+        Self { spi, delay }
     }
 
     pub fn diag_gain(&mut self) -> Result<(u8, u8), Error<SPI>> {
@@ -88,6 +90,12 @@ where
         let bytes = cmd.to_be_bytes();
         let mut result = [0u8; 2];
         self.spi.transfer(&mut result, &bytes).map_err(Error::Spi)?;
+        if READ_DELAY_NS > 0 {
+            if let Some(delay) = &mut self.delay {
+                delay.delay_ns(READ_DELAY_NS);
+            }
+        }
+ 
 
         // send nop to get result back
         let nop = [0x00, 0x00];

@@ -4,7 +4,7 @@
 // ------------------------------------------------------------------------------
 
 use linux_embedded_hal::sysfs_gpio::Pin;
-use linux_embedded_hal::{self as hal, SpidevBus};
+use linux_embedded_hal::{self as hal, Delay};
 
 use as5048a::AS5048A;
 
@@ -30,7 +30,7 @@ fn main() -> Result<(), std::io::Error> {
     ncs.set_direction(Direction::Out).unwrap();
     ncs.set_value(1).unwrap();
 
-    let mut as5048 = AS5048A::new(spi);
+    let mut as5048: AS5048A<_, Delay, 0> = AS5048A::new(spi, None);
 
     println!("AS5048A Example");
     loop {
